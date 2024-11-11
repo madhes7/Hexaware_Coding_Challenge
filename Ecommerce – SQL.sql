@@ -23,11 +23,22 @@ create table products(
  cart_id Int Primary Key Identity(1,1),
  customer_id Int  Not null,
  product_id Int Not null,
- quantity Int Not Null, Constraint FK_Cart_Customer Foreign Key (customer_id) References Customers(customer_id)On Delete CasCade On Update CasCade, Constraint FK_Cart_Products Foreign Key (product_id) References products(product_id) On Delete CasCade On Update CasCade ); create table orders( order_id Int Primary Key Identity (1,1),
+ quantity Int Not Null,
+ Constraint FK_Cart_Customer Foreign Key (customer_id) References Customers(customer_id)On Delete CasCade On Update CasCade,
+ Constraint FK_Cart_Products Foreign Key (product_id) References products(product_id) On Delete CasCade On Update CasCade );
+
+ create table orders(
+ order_id Int Primary Key Identity (1,1),
  customer_id Int Not Null,
  order_date Date Not Null,
  total_price Money Not Null,
- shipping_address Text , Constraint FK_orders_Customer Foreign Key (customer_id) References Customers(customer_id) On Delete CasCade On Update CasCade ); create table order_items( order_item_id Int Primary Key Identity(1,1), order_id Int Not null,
+ shipping_address Text ,
+ Constraint FK_orders_Customer Foreign Key (customer_id) References Customers(customer_id) On Delete CasCade On Update CasCade
+ );
+
+ create table order_items(
+ order_item_id Int Primary Key Identity(1,1),
+ order_id Int Not null,
  product_id Int Not Null ,
  quantity Int Not Null,
  itemAmount Money,
@@ -111,17 +122,114 @@ INSERT INTO cart (customer_id, product_id, quantity) VALUES
 
 select * from cart;
 
---1. Update refrigerator product price to 800
+--1. Update refrigerator product price to 800--
 
 Update products set price=800 where name='Refrigerator';
 
---2. Remove all cart items for a specific customer.Delete from cart where customer_id=3;select * from cart;--3. Retrieve Products Priced Below $100.Select * from products where price<= 100;--4. Find Products with Stock Quantity Greater Than 5.Select * from products where stockQuantity > 5;-- 5. Retrieve Orders with Total Amount Between $500 and $1000.Select * from orders where total_price between 500 And 1000;--6. Find Products which name end with letter ‘r’.Select * from products where [name] like '%r';--7. Retrieve Cart Items for Customer 5.select * from cart where customer_id=5 ;--8. Find Customers Who Placed Orders in 2023.select c.customer_id ,CONCAT_WS(' ',c.first_name,c.last_name) As Name from customers cLeft Join orders o On c.customer_id=o.customer_id where Year(o.order_date)=2023 group by c.customer_id,c.first_name,c.last_name;--9. Determine the Minimum Stock Quantity for Each Product Category.select product_id,Min(stockQuantity) As Min_Quantity from productsGroup by product_id;--10. Calculate the Total Amount Spent by Each Customer.select c.customer_id ,CONCAT_WS(' ',c.first_name,c.last_name) As [Name] , Sum(o.total_price) As Amt_Spend from customers cLeft Join orders o On c.customer_id=o.customer_id group by c.customer_id,c.first_name,c.last_name;--11. Find the Average Order Amount for Each Customer.select   c.customer_id ,  CONCAT_WS(' ',c.first_name,c.last_name) As [Name] ,   Avg(o.total_price) As Avg_Amt from customers cLeft Join orders o On c.customer_id=o.customer_id group by c.customer_id,c.first_name,c.last_name;--12. Count the Number of Orders Placed by Each Customer.select   c.customer_id ,  CONCAT_WS(' ',c.first_name,c.last_name) As [Name] ,   Count(o.order_id) As Count_Ordersfrom customers cLeft Join orders o On c.customer_id=o.customer_id group by c.customer_id,c.first_name,c.last_name;--13. Find the Maximum Order Amount for Each Customer.select   c.customer_id ,  CONCAT_WS(' ',c.first_name,c.last_name) As [Name] ,   Max(o.total_price) As Max_Orderfrom customers cLeft Join orders o On c.customer_id=o.customer_id group by c.customer_id,c.first_name,c.last_name Order By Max(o.total_price) desc;--14. Get Customers Who Placed Orders Totaling Over $1000select   c.customer_id ,  CONCAT_WS(' ',c.first_name,c.last_name) As [Name] ,   Sum(o.total_price) As Sum_Amt from customers cLeft Join orders o On c.customer_id=o.customer_id group by c.customer_id,c.first_name,c.last_namehaving Sum(o.total_price) > 1000;--15. Subquery to Find Products Not in the Cart.Select * from products where product_id Not In (select product_id from cart group by product_id);--16. Subquery to Find Customers Who Haven't Placed Orders. Select * from customers where customer_id Not In (Select customer_id from orders group by customer_id);select * from productsselect * from order_items
---18. Subquery to Find Products with Low Stock.
+--2. Remove all cart items for a specific customer.--
+
+Delete from cart where customer_id=3;
+select * from cart;
+
+--3. Retrieve Products Priced Below $100.--
+
+Select * from products where price<= 100;
+
+--4. Find Products with Stock Quantity Greater Than 5.--
+
+Select * from products where stockQuantity > 5;
+
+-- 5. Retrieve Orders with Total Amount Between $500 and $1000.--
+
+Select * from orders where total_price between 500 And 1000;
+
+--6. Find Products which name end with letter â€˜râ€™.--
+
+Select * from products where [name] like '%r';
+
+--7. Retrieve Cart Items for Customer 5.--
+
+select * from cart where customer_id=5 ;
+
+--8. Find Customers Who Placed Orders in 2023.--
+
+
+select c.customer_id ,CONCAT_WS(' ',c.first_name,c.last_name) As Name from customers c
+Left Join orders o On c.customer_id=o.customer_id 
+where Year(o.order_date)=2023 
+group by c.customer_id,c.first_name,c.last_name;
+
+--9. Determine the Minimum Stock Quantity for Each Product Category.--
+
+select product_id,Min(stockQuantity) As Min_Quantity from products
+Group by product_id;
+
+--10. Calculate the Total Amount Spent by Each Customer.--
+
+select c.customer_id ,CONCAT_WS(' ',c.first_name,c.last_name) As [Name] , Sum(o.total_price) As Amt_Spend from customers c
+Left Join orders o On c.customer_id=o.customer_id 
+group by c.customer_id,c.first_name,c.last_name;
+
+--11. Find the Average Order Amount for Each Customer.--
+select 
+  c.customer_id ,
+  CONCAT_WS(' ',c.first_name,c.last_name) As [Name] , 
+  Avg(o.total_price) As Avg_Amt 
+from customers c
+Left Join orders o On c.customer_id=o.customer_id 
+group by c.customer_id,c.first_name,c.last_name;
+
+--12. Count the Number of Orders Placed by Each Customer.--
+
+select 
+  c.customer_id ,
+  CONCAT_WS(' ',c.first_name,c.last_name) As [Name] , 
+  Count(o.order_id) As Count_Orders
+from customers c
+Left Join orders o On c.customer_id=o.customer_id 
+group by c.customer_id,c.first_name,c.last_name;
+
+
+--13. Find the Maximum Order Amount for Each Customer.--
+
+select 
+  c.customer_id ,
+  CONCAT_WS(' ',c.first_name,c.last_name) As [Name] , 
+  Max(o.total_price) As Max_Order
+from customers c
+Left Join orders o On c.customer_id=o.customer_id 
+group by c.customer_id,c.first_name,c.last_name 
+Order By Max(o.total_price) desc;
+
+--14. Get Customers Who Placed Orders Totaling Over $1000--
+
+select 
+  c.customer_id ,
+  CONCAT_WS(' ',c.first_name,c.last_name) As [Name] , 
+  Sum(o.total_price) As Sum_Amt 
+from customers c
+Left Join orders o On c.customer_id=o.customer_id 
+group by c.customer_id,c.first_name,c.last_name
+having Sum(o.total_price) > 1000;
+
+--15. Subquery to Find Products Not in the Cart.--
+
+Select * from products 
+where product_id Not In (select product_id from cart group by product_id);
+
+--16. Subquery to Find Customers Who Haven't Placed Orders. --
+
+Select * from customers 
+where customer_id Not In (Select customer_id from orders group by customer_id);
+
+
+
+--18. Subquery to Find Products with Low Stock.--
 
 Select * from products 
 where stockQuantity =( select Min(stockQuantity) from products) ;
 
---19. Subquery to Find Customers Who Placed High-Value Orders.
+--19. Subquery to Find Customers Who Placed High-Value Orders.--
 
 SELECT DISTINCT c.customer_id, 
        CONCAT_WS(' ', c.first_name, c.last_name) AS [Name]
